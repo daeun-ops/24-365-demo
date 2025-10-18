@@ -1,1 +1,43 @@
-
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: listener
+  namespace: prod-exchange
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {app: listener}
+  template:
+    metadata:
+      labels: {app: listener}
+    spec:
+      serviceAccountName: listener
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: listener
+        image: public.ecr.aws/daeun/listener-go:latest
+        imagePullPolicy: IfNotPresent
+        args: ["--chain=btc,eth,sol"]
+        env:
+        - name: CHECKPOINT_S3_BUCKET
+          value: "cx-ckpt-1234"
+        - name: WALLET_KEY_ID
+          value: "1234"
+        - name: WALLET_KEY_PW
+          value: "1234"
+        ports:
+        - name: http
+          containerPort: 8080
+        livenessProbe:
+          httpGet: {path: /healthz, port: 8080}
+          initialDelaySeconds: 15
+        readinessProbe:
+          httpGet: {path: /ready, port: 8080}
+          initialDelaySeconds: 10
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities: {drop: ["ALL"]}
+      nodeSelector:
+        kubernetes.io/os: linux
