@@ -1,1 +1,26 @@
-
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: onprem-btc
+  namespace: prod-infra
+subsets:
+- addresses:
+  - ip: 10.50.10.100
+  ports:
+  - name: p2p
+    port: 8333
+  - name: rpc
+    port: 8332
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: onprem-btc
+  namespace: prod-infra
+spec:
+  clusterIP: None
+  ports:
+  - name: p2p
+    port: 8333
+  - name: rpc
+    port: 8332
