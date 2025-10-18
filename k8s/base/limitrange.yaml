@@ -1,1 +1,29 @@
-
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-limits
+  namespace: dev-sandbox
+spec:
+  limits:
+  - type: Container
+    default:
+      cpu: "500m"
+      memory: "512Mi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "128Mi"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-limits
+  namespace: stg-exchange
+spec:
+  limits:
+  - type: Container
+    default:
+      cpu: "1000m"
+      memory: "1Gi"
+    defaultRequest:
+      cpu: "200m"
+      memory: "256Mi"
