@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: allow-egress-onprem
+  namespace: prod-infra
+spec:
+  host: "onprem-btc.prod-infra.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: DISABLE
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: allow-onprem-cidrs
+  namespace: prod-exchange
+spec:
+  hosts: ["onprem.local"]
+  addresses: ["10.50.0.0/16"]
+  ports:
+  - number: 8332
+    name: btc-rpc
+    protocol: TCP
+  location: MESH_EXTERNAL
+  resolution: NONE
+  exportTo: ["."]
