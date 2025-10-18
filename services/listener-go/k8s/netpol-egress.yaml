@@ -1,1 +1,30 @@
-
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: listener-egress
+  namespace: prod-exchange
+spec:
+  podSelector:
+    matchLabels: {app: listener}
+  policyTypes: ["Egress"]
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: prod-infra
+      podSelector:
+        matchLabels:
+          kubernetes.io/name: onprem-btc
+    ports:
+    - port: 8332
+      protocol: TCP
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: prod-infra
+      podSelector:
+        matchLabels:
+          kubernetes.io/name: onprem-eth
+    ports:
+    - port: 8545
+      protocol: TCP
