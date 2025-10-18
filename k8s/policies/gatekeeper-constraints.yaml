@@ -1,1 +1,62 @@
-
+# Gatekeeper: 리소스 리밋 필수, privileged/hostPath 금지
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequiredlimits
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequiredLimits
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package k8srequiredlimits
+      violation[{"msg": msg}] {
+        input.review.kind.kind == "Pod"
+        containers := input.review.object.spec.containers
+        some i
+        not containers[i].resources.limits.cpu
+        msg := "containers must set resources.limits"
+      }
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequiredLimits
+metadata:
+  name: require-limits
+spec:
+  match:
+    kinds:
+    - apiGroups: [""]
+      kinds: ["Pod"]
+    namespaces: ["prod-exchange","prod-risk","prod-wallet","prod-infra","stg-exchange","stg-risk","stg-wallet","stg-infra"]
+---
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sprivileged
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sPrivileged
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package k8sprivileged
+      violation[{"msg": msg}] {
+        input.review.kind.kind == "Pod"
+        some c
+        input.review.object.spec.containers[c].securityContext.privileged == true
+        msg := "privileged containers are not allowed"
+      }
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sPrivileged
+metadata:
+  name: deny-privileged
+spec:
+  match:
+    kinds:
+    - apiGroups: [""]
+      kinds: ["Pod"]
