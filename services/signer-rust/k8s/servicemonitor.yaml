@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: signer
+  namespace: observability
+spec:
+  selector:
+    matchLabels:
+      app: signer
+  namespaceSelector:
+    matchNames: ["prod-wallet"]
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 15s
