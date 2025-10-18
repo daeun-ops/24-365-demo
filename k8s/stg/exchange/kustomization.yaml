@@ -1,1 +1,15 @@
-
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: stg-exchange
+resources:
+- ../../base/namespaces.yaml
+- ../../base/podsecurity.yaml
+- ../../base/networkpolicy-default-deny.yaml
+- ../../base/limitrange.yaml
+- ../../base/resourcequota.yaml
+- deployment.yaml
+- service.yaml
+- hpa.yaml
+- pdb.yaml
+- rbac.yaml
+- netpol.yaml
