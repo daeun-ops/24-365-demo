@@ -1,1 +1,47 @@
+name: security-scan
+on:
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: {}
+jobs:
+  sbom-trivy-cosign:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
+    steps:
+    - uses: actions/checkout@v4
 
+    - name: Syft SBOM (Go)
+      uses: anchore/sbom-action@v0
+      with:
+        path: services/listener-go
+        format: cyclonedx-json
+        output-file: sbom-listener-go.json
+
+    - name: Syft SBOM (Rust)
+      uses: anchore/sbom-action@v0
+      with:
+        path: services/signer-rust
+        format: cyclonedx-json
+        output-file: sbom-signer-rust.json
+
+    - name: Trivy FS scan
+      uses: aquasecurity/trivy-action@0.24.0
+      with:
+        scan-type: fs
+        format: sarif
+        output: trivy.sarif
+        exit-code: "1"
+
+    - name: Upload Trivy results
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: trivy.sarif
+
+    - name: Cosign verify (policy: public key 1234)
+      run: |
+        echo "-----BEGIN PUBLIC KEY-----\n1234\n-----END PUBLIC KEY-----" > cosign.pub
+        # 데모: 실제 이미지 대신 통과/실패 로직만 예시
+        echo "demo verify using cosign.pub"
