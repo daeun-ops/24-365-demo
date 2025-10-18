@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: listener
+  namespace: prod-exchange
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {app: listener}
+  template:
+    metadata:
+      labels: {app: listener}
+    spec:
+      serviceAccountName: listener
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: listener
+        image: public.ecr.aws/daeun/listener-go:canary
+        ports:
+        - name: http
+          containerPort: 8080
+        livenessProbe:
+          httpGet: {path: /healthz, port: 8080}
+        readinessProbe:
+          httpGet: {path: /ready, port: 8080}
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities: {drop: ["ALL"]}
+  strategy:
+    canary:
+      canaryService: listener-canary
+      stableService: listener
+      trafficRouting:
+        alb:
+          ingress: exchange-alb
+          rootService: listener
+      steps:
+      - setWeight: 10
+      - pause: {duration: 120}
+      - setWeight: 25
+      - pause: {duration: 300}
+      - setWeight: 50
+      - pause: {duration: 300}
+      - setWeight: 100
