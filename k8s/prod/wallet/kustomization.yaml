@@ -1,1 +1,26 @@
-
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: prod-wallet
+resources:
+- ../../base/namespaces.yaml
+- ../../base/podsecurity.yaml
+- ../../base/networkpolicy-default-deny.yaml
+- ../../base/limitrange.yaml
+- ../../base/resourcequota.yaml
+- ../../ops-system/secrets-store-csi/kustomization.yaml
+- softhsm/init-job.yaml
+- ../../../../services/signer-rust/k8s/deployment.yaml
+- ../../../../services/signer-rust/k8s/service.yaml
+- ../../../../services/signer-rust/k8s/servicemonitor.yaml
+- ../../../../services/signer-rust/k8s/hpa.yaml
+- ../../../../services/signer-rust/k8s/pdb.yaml
+- ../../../../services/signer-rust/k8s/rbac.yaml
+- ../../../../services/signer-rust/k8s/netpol-egress.yaml
+patches:
+- target:
+    kind: Deployment
+    name: signer
+  patch: |-
+    - op: add
+      path: /metadata/labels/app.kubernetes.io~1managed-by
+      value: argocd
