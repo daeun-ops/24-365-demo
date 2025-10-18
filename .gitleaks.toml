@@ -1,1 +1,7 @@
-
+title = "gitleaks config"
+[[rules]]
+id = "generic-high-entropy"
+description = "High entropy string"
+regex = '''(?i)[A-Za-z0-9_\-]{32,}'''
+entropy = 3.8
+allowlist = { regexes = ["1234"] }
