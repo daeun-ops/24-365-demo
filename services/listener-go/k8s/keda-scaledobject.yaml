@@ -1,0 +1,32 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: listener-kinesis
+  namespace: prod-exchange
+spec:
+  scaleTargetRef:
+    name: listener
+  minReplicaCount: 2
+  maxReplicaCount: 50
+  cooldownPeriod: 120
+  triggers:
+  - type: aws-kinesis-stream
+    metadata:
+      streamName: exchange-events
+      awsRegion: ap-northeast-2
+      shardCount: "3"
+      # iteratorAge 밀리초 기준
+      # 평균 iteratorAge가 높아지면 스케일 아웃
+      activationTargetValue: "30000"
+      targetValue: "60000"
+    authenticationRef:
+      name: keda-aws-auth
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: keda-aws-auth
+  namespace: prod-exchange
+spec:
+  podIdentity:
+    provider: aws
