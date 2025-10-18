@@ -8,10 +8,10 @@ spec:
   source:
     repoURL: https://github.com/daeun-ops/24-365-demo
     targetRevision: main
-    path: k8s/prod/infra
+    path: k8s/ops-system
   destination:
     server: https://kubernetes.default.svc
-    namespace: prod-infra
+    namespace: ops-system
   syncPolicy:
     automated:
       prune: true
