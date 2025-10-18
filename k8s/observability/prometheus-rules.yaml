@@ -1,0 +1,36 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: exchange-slo-rules
+  namespace: observability
+spec:
+  groups:
+  - name: latency-and-error
+    rules:
+    - record: job:http_request_duration_seconds:p95
+      expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, job))
+    - alert: HighErrorRate
+      expr: sum(rate(http_requests_total{code=~"5.."}[5m])) by (job) / sum(rate(http_requests_total[5m])) by (job) > 0.02
+      for: 10m
+      labels: {severity: critical}
+      annotations:
+        summary: "High 5xx error rate"
+  - name: chain-drift
+    rules:
+    - record: chain_block_height_drift
+      expr: |
+        max by(chain) (chain_block_height_current) - max by(chain) (chain_block_height_reference)
+    - alert: BlockHeightDrift
+      expr: chain_block_height_drift > 3
+      for: 5m
+      labels: {severity: critical}
+      annotations:
+        summary: "Block height drift > 3"
+  - name: sync-lag
+    rules:
+    - alert: NodeSyncLag
+      expr: (time() - chain_last_synced_timestamp) > 120
+      for: 10m
+      labels: {severity: warning}
+      annotations:
+        summary: "Node sync lag > 120s"
