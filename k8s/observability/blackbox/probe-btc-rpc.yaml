@@ -1,10 +1,10 @@
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
-  name: probe-btc-rpc
+  name: probe-eth-rpc
   namespace: observability
 spec:
-  jobName: "probe-btc-rpc"
+  jobName: "probe-eth-rpc"
   interval: 30s
   module: tcp_connect
   prober:
@@ -12,5 +12,4 @@ spec:
   targets:
     staticConfig:
       static:
-      # 온프레 비공개 RPC 엔드포인트(예: 10.50.10.100:8332) - 데모용
-      - "10.50.10.100:8332"
+      - "10.50.10.101:8545"
