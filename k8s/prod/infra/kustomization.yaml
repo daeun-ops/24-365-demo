@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: prod-infra
+resources:
+- ingress/alb-ingress.yaml
+- ingress/waf-association.yaml
+- external-services/onprem-btc-endpoints.yaml
+- external-services/onprem-eth-endpoints.yaml
+- external-services/onprem-solana-endpoints.yaml
