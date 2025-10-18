@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-to-broker
+  namespace: prod-exchange
+  labels:
+    app.kubernetes.io/managed-by: argocd
+spec:
+  podSelector:
+    matchLabels: { app: listener }
+  policyTypes: ["Egress"]
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: prod-infra
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: msk-bootstrap
+    ports:
+    - port: 9092
+      protocol: TCP
