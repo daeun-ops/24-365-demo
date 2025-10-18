@@ -1,1 +1,31 @@
-
+name: ci
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: "1.22.x"
+    - name: Go build & test
+      working-directory: services/listener-go
+      run: |
+        go mod tidy
+        go build ./...
+        go test ./...
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Rust build & test
+      working-directory: services/signer-rust
+      run: |
+        cargo build --locked
+        cargo test
+    - name: Build container images (metadata only)
+      run: |
+        echo "skip real push; demo only"
