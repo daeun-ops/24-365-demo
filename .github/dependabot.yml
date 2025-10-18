@@ -1,1 +1,11 @@
-
+version: 2
+updates:
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule: { interval: "weekly" }
+- package-ecosystem: "gomod"
+  directory: "/services/listener-go"
+  schedule: { interval: "weekly" }
+- package-ecosystem: "cargo"
+  directory: "/services/signer-rust"
+  schedule: { interval: "weekly" }
