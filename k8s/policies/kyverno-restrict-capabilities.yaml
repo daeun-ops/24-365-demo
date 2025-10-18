@@ -1,1 +1,33 @@
-
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-containers
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+  - name: require-nonroot-rofs-seccomp-caps
+    match:
+      any:
+      - resources:
+          kinds: ["Pod","Deployment","StatefulSet","DaemonSet","Job","CronJob"]
+    validate:
+      message: "runAsNonRoot, readOnlyRootFilesystem, seccompProfile, and drop ALL caps are required."
+      pattern:
+        spec:
+          securityContext:
+            runAsNonRoot: true
+          template?:
+            spec:
+              securityContext:
+                runAsNonRoot: true
+              containers:
+              - name: "*"
+                securityContext:
+                  readOnlyRootFilesystem: true
+                  allowPrivilegeEscalation: false
+                  seccompProfile:
+                    type: "RuntimeDefault"
+                  capabilities:
+                    drop:
+                    - "ALL"
