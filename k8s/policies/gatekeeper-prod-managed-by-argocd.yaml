@@ -1,0 +1,42 @@
+# prod 네임스페이스는 Argo CD만 배포 가능, 모든 리소스에 managed-by=argocd 라벨 강제
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequiredlabelmanagedby
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequiredLabelManagedBy
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package k8srequiredlabelmanagedby
+      is_prod(ns) { ns == "prod-exchange" } { ns == "prod-risk" } { ns == "prod-wallet" } { ns == "prod-infra" }
+      violation[{"msg": msg}] {
+        input.review.object.metadata.namespace = ns
+        is_prod(ns)
+        not input.review.object.metadata.labels["app.kubernetes.io/managed-by"]
+        msg := sprintf("label app.kubernetes.io/managed-by=argocd is required in %v", [ns])
+      }
+      violation[{"msg": msg}] {
+        input.review.object.metadata.namespace = ns
+        is_prod(ns)
+        input.review.object.metadata.labels["app.kubernetes.io/managed-by"] != "argocd"
+        msg := sprintf("only Argo CD can manage prod resources (managed-by=argocd) in %v", [ns])
+      }
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequiredLabelManagedBy
+metadata:
+  name: prod-only-argocd
+spec:
+  match:
+    kinds:
+    - apiGroups: ["*"]
+      kinds: ["*"]
+    namespaces:
+    - "prod-exchange"
+    - "prod-risk"
+    - "prod-wallet"
+    - "prod-infra"
