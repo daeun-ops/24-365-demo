@@ -1,1 +1,29 @@
-
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: listener
+  namespace: prod-exchange
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: listener
+  namespace: prod-exchange
+rules:
+- apiGroups: [""]
+  resources: ["configmaps","secrets"]
+  verbs: ["get","list","watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: listener
+  namespace: prod-exchange
+subjects:
+- kind: ServiceAccount
+  name: listener
+  namespace: prod-exchange
+roleRef:
+  kind: Role
+  name: listener
+  apiGroup: rbac.authorization.k8s.io
