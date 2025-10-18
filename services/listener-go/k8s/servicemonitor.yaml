@@ -1,1 +1,15 @@
-
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: listener
+  namespace: observability
+spec:
+  selector:
+    matchLabels:
+      app: listener
+  namespaceSelector:
+    matchNames: ["prod-exchange"]
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 15s
