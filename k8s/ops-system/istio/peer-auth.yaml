@@ -1,0 +1,17 @@
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: default-strict
+  namespace: prod-exchange
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: default-strict
+  namespace: prod-wallet
+spec:
+  mtls:
+    mode: STRICT
