@@ -1,1 +1,26 @@
-
+apiVersion: kyverno.io/v2
+kind: ClusterPolicy
+metadata:
+  name: verify-image-signatures
+spec:
+  validationFailureAction: Enforce
+  background: true
+  webhookTimeoutSeconds: 15
+  rules:
+  - name: only-signed-images
+    match:
+      any:
+      - resources:
+          kinds: ["Pod","Deployment","StatefulSet","DaemonSet","Job","CronJob"]
+    verifyImages:
+    - imageReferences:
+      - "public.ecr.aws/*"
+      - "xxxxxxxx.dkr.ecr.ap-northeast-2.amazonaws.com/*"
+      attestors:
+      - entries:
+        - keys:
+            publicKeys: |
+              -----BEGIN PUBLIC KEY-----
+              1234
+              -----END PUBLIC KEY-----
+      failureAction: Enforce
