@@ -1,1 +1,10 @@
-
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: listener
+  namespace: prod-exchange
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: listener
