@@ -2,12 +2,14 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: ops-system
 resources:
-- ../policies/../.. # 무시 가능(placeholder)
 - ../policies/gatekeeper-constraints.yaml
 - ../policies/kyverno-restrict-capabilities.yaml
 - ../policies/cosign-required-constraint.yaml
 - ../policies/registry-allowlist.yaml
+- ../policies/gatekeeper-prod-managed-by-argocd.yaml
 - argocd/namespace.yaml
+- karpenter/provisioner.yaml
+- istio/kustomization.yaml
 helmCharts:
 - name: keda
   repo: https://kedacore.github.io/charts
@@ -29,5 +31,3 @@ helmCharts:
   version: 0.3.9
   releaseName: csi-provider-aws
   namespace: ops-system
-resources:
-- karpenter/provisioner.yaml
