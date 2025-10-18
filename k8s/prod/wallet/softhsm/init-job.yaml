@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: softhsm2-conf
+  namespace: prod-wallet
+data:
+  softhsm2.conf: |
+    directories.tokendir = /var/lib/softhsm/tokens
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: softhsm-init
+  namespace: prod-wallet
+  labels:
+    app.kubernetes.io/managed-by: argocd
+spec:
+  template:
+    metadata:
+      labels: { app: softhsm-init }
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: init
+        image: ghcr.io/opendal/softhsm2:latest
+        env:
+        - name: SOFTHSM2_CONF
+          value: /etc/softhsm2/softhsm2.conf
+        - name: HSM_USER_PIN
+          value: "1234"
+        - name: HSM_SO_PIN
+          value: "1234"
+        command:
+        - sh
+        - -c
+        - |
+          mkdir -p /var/lib/softhsm/tokens
+          softhsm2-util --init-token --free --label WALLET --so-pin ${HSM_SO_PIN} --pin ${HSM_USER_PIN}
+          softhsm2-util --show-slots
+        volumeMounts:
+        - name: conf
+          mountPath: /etc/softhsm2
+        - name: data
+          mountPath: /var/lib/softhsm
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"] }
+      volumes:
+      - name: conf
+        configMap:
+          name: softhsm2-conf
+      - name: data
+        emptyDir: {}
