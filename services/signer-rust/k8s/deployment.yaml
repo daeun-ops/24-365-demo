@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: signer
+  namespace: prod-wallet
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {app: signer}
+  template:
+    metadata:
+      labels: {app: signer}
+    spec:
+      serviceAccountName: signer
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: signer
+        image: public.ecr.aws/daeun/signer-rust:latest
+        env:
+        - name: HSM_SLOT_ID
+          value: "1234"
+        - name: HSM_USER_PIN
+          value: "1234"
+        ports:
+        - name: http
+          containerPort: 8081
+        livenessProbe:
+          httpGet: {path: /healthz, port: 8081}
+          initialDelaySeconds: 15
+        readinessProbe:
+          httpGet: {path: /ready, port: 8081}
+          initialDelaySeconds: 10
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities: {drop: ["ALL"]}
