@@ -1,1 +1,22 @@
-
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: allowlisted-registries
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+  - name: enforce-registry
+    match:
+      any:
+      - resources:
+          kinds: ["Pod","Deployment","StatefulSet","DaemonSet","Job","CronJob"]
+    validate:
+      message: "Only ECR and GHCR are allowed."
+      pattern:
+        spec:
+          template?:
+            spec:
+              containers:
+              - name: "*"
+                image: "(*.dkr.ecr.*.amazonaws.com/*|ghcr.io/*|public.ecr.aws/*)"
