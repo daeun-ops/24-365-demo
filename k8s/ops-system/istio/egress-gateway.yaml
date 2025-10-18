@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: istio-system
+  labels:
+    pod-security.kubernetes.io/enforce: "restricted"
+---
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: istio-minimal
+  namespace: istio-system
+spec:
+  profile: minimal
+  meshConfig:
+    enableAutoMtls: true
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: egress-gateway
+  namespace: istio-system
+spec:
+  selector:
+    istio: egressgateway
+  servers:
+  - port: { number: 443, name: tls, protocol: TLS }
+    hosts: ["*"]
+    tls: { mode: PASSTHROUGH }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: istio-egressgateway
+  namespace: istio-system
+  labels: { istio: egressgateway, app: istio-egressgateway }
+spec:
+  replicas: 1
+  selector: { matchLabels: { istio: egressgateway, app: istio-egressgateway } }
+  template:
+    metadata: { labels: { istio: egressgateway, app: istio-egressgateway } }
+    spec:
+      containers:
+      - name: istio-proxy
+        image: docker.io/istio/proxyv2:1.22.3
+        args: ["proxy","router","--domain","$(POD_NAMESPACE).svc.cluster.local"]
+        securityContext:
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"] }
