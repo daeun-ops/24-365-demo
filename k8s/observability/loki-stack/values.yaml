@@ -1,1 +1,9 @@
-
+loki:
+  isDefault: true
+  auth_enabled: false
+  storage:
+    type: filesystem
+promtail:
+  enabled: true
+  pipelineStages:
+    - cri: {}
