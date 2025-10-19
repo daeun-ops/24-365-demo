@@ -1,26 +1,39 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-namespace: prod-exchange
-resources:
-- ../../base/namespaces.yaml
-- ../../base/podsecurity.yaml
-- ../../base/networkpolicy-default-deny.yaml
-- ../../base/limitrange.yaml
-- ../../base/resourcequota.yaml
-- ../../observability/kube-prometheus-stack/kustomization.yaml
-- ../../observability/loki-stack/kustomization.yaml
-- ../../observability/tempo/kustomization.yaml
-- ../../observability/otel-collector.yaml
-- ../../observability/blackbox/kustomization.yaml
-- ../../ops-system/keda/kustomization.yaml
-- ../../ops-system/karpenter/provisioner.yaml
-- ../../ops-system/argo-rollouts/kustomization.yaml
-- ../../ops-system/secrets-store-csi/kustomization.yaml
-- deployment.yaml
-- service.yaml
-- hpa.yaml
-- pdb.yaml
-- rbac.yaml
-- netpol.yaml
-# Rollouts 사용 시:
-# - ../exchange/rollout.yaml 로 대체
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: listener
+  namespace: prod-exchange
+  labels:
+    app.kubernetes.io/managed-by: argocd
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: listener
+  namespace: prod-exchange
+  labels:
+    app.kubernetes.io/managed-by: argocd
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: listener
+  namespace: prod-exchange
+  labels:
+    app.kubernetes.io/managed-by: argocd
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: listener
+  namespace: prod-exchange
+  labels:
+    app.kubernetes.io/managed-by: argocd
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: listener-egress
+  namespace: prod-exchange
+  labels:
+    app.kubernetes.io/managed-by: argocd
