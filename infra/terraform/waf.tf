@@ -1,5 +1,4 @@
-# AWS WAF v2 – 기본 OWASP 관리형 룰 + 레이트 리밋 (데모)
-variable "waf_scope" { type = string  default = "REGIONAL" } # ALB용 REGIONAL
+variable "waf_scope" { type = string  default = "REGIONAL" }
 resource "aws_wafv2_web_acl" "exchange" {
   name  = "${var.name}-waf"
   scope = var.waf_scope
