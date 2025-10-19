@@ -1,4 +1,3 @@
-# Route53 Resolver Inbound/Outbound + 사내 도메인 포워딩(onprem.local → 온프레 DNS 10.50.0.53)
 resource "aws_security_group" "resolver" {
   name   = "${var.name}-resolver-sg"
   vpc_id = module.vpc.vpc_id
@@ -28,9 +27,7 @@ resource "aws_route53_resolver_rule" "onprem_forward" {
   name                 = "${var.name}-onprem-fwd"
   rule_type            = "FORWARD"
   resolver_endpoint_id = aws_route53_resolver_endpoint.outbound.id
-  target_ip {
-    ip = "10.50.0.53" # 온프레 DNS
-  }
+  target_ip { ip = "10.50.0.53" }
 }
 
 resource "aws_route53_resolver_rule_association" "onprem_assoc" {
