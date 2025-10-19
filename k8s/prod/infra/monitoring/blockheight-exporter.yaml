@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blockheight-exporter
+  namespace: prod-infra
+  labels: { app: blockheight-exporter, app.kubernetes.io/managed-by: argocd }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: blockheight-exporter } }
+  template:
+    metadata: { labels: { app: blockheight-exporter } }
+    spec:
+      containers:
+      - name: exporter
+        image: public.ecr.aws/daeun/blockheight-exporter:latest
+        args: ["--chains","btc,eth,sol"]
+        ports: [{ name: metrics, containerPort: 9100 }]
+        env:
+        - { name: BTC_RPC_URL, value: "http://10.50.10.100:8332" }
+        - { name: ETH_RPC_URL, value: "http://10.50.10.101:8545" }
+        - { name: SOL_RPC_URL, value: "http://10.50.10.102:8899" }
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"] }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blockheight-exporter
+  namespace: prod-infra
+  labels: { app: blockheight-exporter, app.kubernetes.io/managed-by: argocd }
+spec:
+  selector: { app: blockheight-exporter }
+  ports: [{ name: metrics, port: 9100, targetPort: metrics }]
