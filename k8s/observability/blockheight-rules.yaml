@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: blockheight-alerts
+  namespace: observability
+  labels: { app.kubernetes.io/managed-by: argocd }
+spec:
+  groups:
+  - name: blockheight.rules
+    rules:
+    - alert: BlockchainSyncLag
+      expr: chain_sync_height_difference > 3
+      for: 10m
+      labels: { severity: critical }
+      annotations:
+        summary: "Node sync lag > 3 blocks"
+        description: "Height difference persists 10m."
