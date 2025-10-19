@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: falco
+  namespace: argocd
+  annotations: { argocd.argoproj.io/sync-wave: "-1" }
+spec:
+  project: default
+  source:
+    repoURL: https://falcosecurity.github.io/charts
+    chart: falco
+    targetRevision: 4.7.2
+    helm:
+      releaseName: falco
+      values: |
+        falco:
+          json_output: true
+          http_output:
+            enabled: true
+            url: "http://loki.observability.svc.cluster.local:3100/loki/api/v1/push"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ops-system
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
