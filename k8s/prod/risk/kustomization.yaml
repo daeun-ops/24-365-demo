@@ -1,1 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: prod-risk
+resources:
+  # 공통 보안/리소스 기본값
+  - ../../base/namespaces.yaml
+  - ../../base/podsecurity.yaml
+  - ../../base/networkpolicy-default-deny.yaml
+  - ../../base/limitrange.yaml
+  - ../../base/resourcequota.yaml
 
+  # 앱 리소스
+  - deployment.yaml
+  - service.yaml
+  - hpa.yaml
+  - pdb.yaml
+  - rbac.yaml
+  - netpol.yaml
