@@ -1,1 +1,36 @@
-
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: risk-svc-policy
+  namespace: prod-risk
+  labels:
+    app.kubernetes.io/managed-by: argocd
+spec:
+  podSelector:
+    matchLabels:
+      app: risk-svc
+  policyTypes: ["Ingress","Egress"]
+  # Ingress: 외부(ALB)에서 직접 접근 금지. prod-exchange 내부에서만 호출 허용.
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: prod-exchange
+    ports:
+    - port: 8082
+      protocol: TCP
+  # Egress: DNS + 브로커로만 통신 허용
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - port: 53
+      protocol: UDP
+  - to:
+    - ipBlock:
+        cidr: 10.100.30.0/24   # MSK brokers 예시 CIDR
+    ports:
+    - port: 9092
+      protocol: TCP
