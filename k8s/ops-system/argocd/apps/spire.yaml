@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: spire
+  namespace: argocd
+  annotations: { argocd.argoproj.io/sync-wave: "-2" }
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/spiffe/helm-charts
+    chart: spire
+    targetRevision: 0.13.0
+    helm:
+      releaseName: spire
+      values: |
+        spire-server:
+          enabled: true
+        spire-agent:
+          enabled: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ops-system
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [CreateNamespace=true]
