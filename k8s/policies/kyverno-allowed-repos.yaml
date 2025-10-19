@@ -1,0 +1,16 @@
+apiVersion: kyverno.io/v2beta1
+kind: ClusterPolicy
+metadata:
+  name: allowed-image-repos
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+  - name: only-allowed-repos
+    match: { any: [ { resources: { kinds: ["Pod","Deployment","StatefulSet","DaemonSet","Job","CronJob"] } } ] }
+    validate:
+      message: "Images must be pulled from allowed repos"
+      pattern:
+        spec:
+          containers:
+          - image: "public.ecr.aws/* | *.dkr.ecr.*.amazonaws.com/*"
