@@ -1,1 +1,57 @@
-
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: signer
+  namespace: prod-wallet
+  labels:
+    app: signer
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: signer
+  template:
+    metadata:
+      labels:
+        app: signer
+    spec:
+      serviceAccountName: signer
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: signer
+        image: public.ecr.aws/daeun/signer-rust:stable
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 8081
+            name: http
+        env:
+          - name: HSM_PIN
+            value: "1234"
+          - name: NETWORK
+            value: "mainnet"
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
