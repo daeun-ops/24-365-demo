@@ -3,26 +3,32 @@ kind: Application
 metadata:
   name: kube-prometheus-stack
   namespace: argocd
+  annotations:
+    # ↓ CRD가 필요한 리소스보다 먼저 설치되도록 순서 지정
+    argocd.argoproj.io/sync-wave: "-1"
 spec:
   project: default
   source:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
-    targetRevision: 62.7.0
+    targetRevision: 61.2.0
     helm:
-      releaseName: kps
+      releaseName: kube-prometheus-stack
       values: |
+        fullnameOverride: kps
+        prometheus:
+          prometheusSpec:
+            serviceMonitorSelectorNilUsesHelmValues: false
+            podMonitorSelectorNilUsesHelmValues: false
         grafana:
-          enabled: true
-          defaultDashboardsEnabled: true
+          adminUser: admin
           adminPassword: "1234"
-        alertmanager:
-          enabled: true
-        kubeEtcd:
-          enabled: false
   destination:
     server: https://kubernetes.default.svc
-    namespace: observability
+    namespace: ops-observability
   syncPolicy:
-    automated: { prune: true, selfHeal: true }
-    syncOptions: [CreateNamespace=true]
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
