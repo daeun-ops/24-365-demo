@@ -1,1 +1,54 @@
-
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: risk-svc
+  namespace: prod-risk
+  labels:
+    app: risk-svc
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: risk-svc
+  template:
+    metadata:
+      labels:
+        app: risk-svc
+    spec:
+      serviceAccountName: risk-svc
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: risk
+        image: public.ecr.aws/daeun/risk-svc:stable
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8082
+        env:
+        - name: BROKER_BOOTSTRAP
+          value: "msk-bootstrap.prod-infra.svc.cluster.local:9092"
+        - name: CONFIG_SOURCE
+          value: "1234"
+        - name: LOG_LEVEL
+          value: "info"
+        resources:
+          requests:
+            cpu: "300m"
+            memory: "384Mi"
+          limits:
+            cpu: "800m"
+            memory: "768Mi"
+        livenessProbe:
+          httpGet: { path: /healthz, port: 8082 }
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        readinessProbe:
+          httpGet: { path: /ready, port: 8082 }
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"] }
