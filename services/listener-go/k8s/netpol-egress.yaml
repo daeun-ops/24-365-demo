@@ -3,28 +3,19 @@ kind: NetworkPolicy
 metadata:
   name: listener-egress
   namespace: prod-exchange
+  labels:
+    app.kubernetes.io/managed-by: argocd
 spec:
   podSelector:
-    matchLabels: {app: listener}
+    matchLabels: { app: listener }
   policyTypes: ["Egress"]
   egress:
   - to:
-    - namespaceSelector:
-        matchLabels:
-          kubernetes.io/metadata.name: prod-infra
-      podSelector:
-        matchLabels:
-          kubernetes.io/name: onprem-btc
-    ports:
-    - port: 8332
-      protocol: TCP
+    - ipBlock: { cidr: 10.50.10.100/32 }  # BTC RPC
+    ports: [{ port: 8332, protocol: TCP }]
   - to:
-    - namespaceSelector:
-        matchLabels:
-          kubernetes.io/metadata.name: prod-infra
-      podSelector:
-        matchLabels:
-          kubernetes.io/name: onprem-eth
-    ports:
-    - port: 8545
-      protocol: TCP
+    - ipBlock: { cidr: 10.50.10.101/32 }  # ETH RPC
+    ports: [{ port: 8545, protocol: TCP }]
+  - to:
+    - ipBlock: { cidr: 10.100.30.0/24 }   # MSK brokers 예시
+    ports: [{ port: 9092, protocol: TCP }]
