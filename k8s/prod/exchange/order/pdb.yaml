@@ -1,0 +1,9 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: order-svc
+  namespace: prod-exchange
+  labels: { app.kubernetes.io/managed-by: argocd }
+spec:
+  minAvailable: 2
+  selector: { matchLabels: { app: order-svc } }
