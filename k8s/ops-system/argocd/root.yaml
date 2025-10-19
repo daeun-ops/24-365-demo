@@ -8,13 +8,10 @@ spec:
   source:
     repoURL: https://github.com/daeun-ops/24-365-demo
     targetRevision: main
-    path: k8s/ops-system
+    path: k8s/ops-system/argocd/apps
   destination:
     server: https://kubernetes.default.svc
-    namespace: ops-system
+    namespace: argocd
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-    - CreateNamespace=true
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [CreateNamespace=true]
