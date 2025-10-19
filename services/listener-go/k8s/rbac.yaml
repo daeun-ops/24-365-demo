@@ -3,6 +3,8 @@ kind: ServiceAccount
 metadata:
   name: listener
   namespace: prod-exchange
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::1234:role/ListenerIRSA-1234
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
