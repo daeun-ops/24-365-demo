@@ -1,1 +1,26 @@
-
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: exchange-gw-ingress
+  namespace: prod-exchange
+  labels:
+    app.kubernetes.io/managed-by: argocd
+spec:
+  podSelector:
+    matchLabels: { app: exchange-gw }
+  policyTypes: ["Ingress","Egress"]
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    ports:
+    - port: 8080
+      protocol: TCP
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
