@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: blockheight-exporter
+  namespace: observability
+  labels: { app.kubernetes.io/managed-by: argocd }
+spec:
+  selector:
+    matchLabels: { app: blockheight-exporter }
+  namespaceSelector:
+    matchNames: ["prod-infra"]
+  endpoints:
+  - port: metrics
+    interval: 15s
