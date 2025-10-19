@@ -1,1 +1,16 @@
-
+apiVersion: v1
+kind: Service
+metadata:
+  name: risk-svc
+  namespace: prod-risk
+  labels:
+    app: risk-svc
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app: risk-svc
+  ports:
+  - name: http
+    port: 8082
+    targetPort: http
+  type: ClusterIP
