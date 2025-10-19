@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: karpenter
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://charts.karpenter.sh
+    chart: karpenter
+    targetRevision: 1.0.7
+    helm:
+      releaseName: karpenter
+      values: |
+        settings:
+          clusterName: cx-portfolio-eks
+          interruptionQueue: karpenter-interruption
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ops-system
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [CreateNamespace=true]
