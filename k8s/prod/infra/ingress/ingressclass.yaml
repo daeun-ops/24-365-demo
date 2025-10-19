@@ -2,9 +2,10 @@ apiVersion: networking.k8s.io/v1
 kind: IngressClass
 metadata:
   name: alb
-metadata:
   labels:
     app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"   # 컨트롤러보다 늦게 되면 안 됨 → 먼저
 spec:
   controller: ingress.k8s.aws/alb
   parameters:
