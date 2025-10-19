@@ -1,3 +1,5 @@
+#다른 백엔드를 붙일 때만 사용하고 아닐 때는 사용X
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
