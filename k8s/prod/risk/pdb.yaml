@@ -1,1 +1,12 @@
-
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: risk-svc
+  namespace: prod-risk
+  labels:
+    app.kubernetes.io/managed-by: argocd
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: risk-svc
