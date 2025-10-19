@@ -1,39 +1,34 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: listener
-  namespace: prod-exchange
-  labels:
-    app.kubernetes.io/managed-by: argocd
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: listener
-  namespace: prod-exchange
-  labels:
-    app.kubernetes.io/managed-by: argocd
----
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: listener
-  namespace: prod-exchange
-  labels:
-    app.kubernetes.io/managed-by: argocd
----
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: listener
-  namespace: prod-exchange
-  labels:
-    app.kubernetes.io/managed-by: argocd
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: listener-egress
-  namespace: prod-exchange
-  labels:
-    app.kubernetes.io/managed-by: argocd
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: prod-exchange
+resources:
+# 공통 보안/리밋
+- ../../base/namespaces.yaml
+- ../../base/podsecurity.yaml
+- ../../base/networkpolicy-default-deny.yaml
+- ../../base/limitrange.yaml
+- ../../base/resourcequota.yaml
+# GW + Listener 기존 리소스(이미 존재)
+- deployment.yaml
+- service.yaml
+- hpa.yaml
+- pdb.yaml
+- rbac.yaml
+- netpol.yaml
+- ingress.yaml
+# 신규 MSA
+- order/
+- matching/
+- settlement/
+patches:
+# listener 라벨 패치 등 기존 항목이 있으면 유지
+- target: { kind: Deployment, name: listener }
+  path: patches-listener-labels.yaml
+- target: { kind: Service, name: listener }
+  path: patches-listener-labels.yaml
+- target: { kind: HorizontalPodAutoscaler, name: listener }
+  path: patches-listener-labels.yaml
+- target: { kind: PodDisruptionBudget, name: listener }
+  path: patches-listener-labels.yaml
+- target: { kind: NetworkPolicy, name: listener-egress }
+  path: patches-listener-labels.yaml
