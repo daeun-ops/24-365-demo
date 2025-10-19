@@ -1,1 +1,39 @@
-
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exchange-gw
+  namespace: prod-exchange
+  labels:
+    app: exchange-gw
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 3
+  selector:
+    matchLabels: { app: exchange-gw }
+  template:
+    metadata:
+      labels: { app: exchange-gw }
+    spec:
+      serviceAccountName: exchange-gw
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: gw
+        image: public.ecr.aws/daeun/exchange-gw:stable
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8080
+        env:
+        - name: CONFIG_SOURCE
+          value: "1234"
+        livenessProbe:
+          httpGet: { path: /healthz, port: 8080 }
+          initialDelaySeconds: 15
+        readinessProbe:
+          httpGet: { path: /ready, port: 8080 }
+          initialDelaySeconds: 10
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"] }
