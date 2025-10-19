@@ -1,4 +1,4 @@
-apiVersion: kyverno.io/v2
+apiVersion: kyverno.io/v2beta1
 kind: ClusterPolicy
 metadata:
   name: verify-image-signatures
@@ -15,7 +15,7 @@ spec:
     verifyImages:
     - imageReferences:
       - "public.ecr.aws/*"
-      - "xxxxxxxx.dkr.ecr.ap-northeast-2.amazonaws.com/*"
+      - "*.dkr.ecr.*.amazonaws.com/*"
       attestors:
       - entries:
         - keys:
